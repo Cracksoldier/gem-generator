@@ -43,13 +43,17 @@ three.js is loaded as UMD globals from jsDelivr CDN (r134) via plain `<script>` 
 **Ring stack** (Y axis: positive = up):
 ```
 yTable      — table cap + top of crown belt
-yGirdleTop  — top of girdle band
-yGirdleBot  — bottom of girdle band
+yGirdleTop  — top of girdle band  (= 0)
+yGirdleBot  — bottom of girdle band (= -girdleH; equals yGirdleTop when girdleH=0)
 yPavMid     — intermediate pavilion ring (60% of pavilion depth)
 yPavTip     — culet tip or flat
 ```
 
-**UI → geometry flow**: every `<input>`/`<select>` fires `debouncedRebuild()` (80 ms debounce) → `rebuildGem()` → `buildGemGeometry(params)` → disposes old mesh, adds new `THREE.Mesh` to scene. Camera is positioned only on the first build (`firstBuild` flag).
+When `girdleH === 0` (girdle slider at 0%), the girdle belt is skipped and crown and pavilion share a single ring at Y=0, producing a sharp edge.
+
+**Mirror Crown mode**: when `mirrorCrown` is true, the pavilion geometry is replaced by a second crown mirrored below the girdle — same table radius, crown height, facet count, and cut outline as the top. The pavilion belt, pavMid ring, and culet are all skipped; instead `buildBelt(girdleRing, yGB, tableRing2, yTable2)` + `buildCap` close the bottom.
+
+**UI → geometry flow**: every `<input>`/`<select>`/`<checkbox>` fires `debouncedRebuild()` (80 ms debounce) → `rebuildGem()` → `buildGemGeometry(params)` → disposes old mesh, adds new `THREE.Mesh` to scene. Camera is positioned only on the first build (`firstBuild` flag). The `mirrorCrown` checkbox also calls `updateMirrorUI()` to dim the Pavilion Depth, Pavilion Facets, and Culet controls.
 
 **STL export**: `STLExporter.parse(mesh, { binary: true })` → `Blob` → programmatic `<a>` click download.
 
@@ -60,3 +64,4 @@ yPavTip     — culet tip or flat
 - `MeshPhongMaterial` (not `MeshPhysicalMaterial`) is used — r134's physical material requires an env map for transmission to be visible. Phong with high shininess gives a gem-like specular appearance without that dependency.
 - `THREE.DoubleSide` is used so inside faces are visible during orbit but the exported STL relies on correct winding for slicers.
 - Adding a new cut style requires: a new shape function, an entry in `getShapeFn()`, and an `<option>` in the `#cut` select. Elongated shapes (aspect ratio ≠ 1) set `aspectY` in `buildGemGeometry`.
+- `gemMesh` and `wireframeMesh` share the same `BufferGeometry` object. On rebuild, only `gemMesh.geometry.dispose()` is called; `wireframeMesh.material.dispose()` is called but geometry disposal is skipped to avoid a double-free.
