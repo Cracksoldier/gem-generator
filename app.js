@@ -194,7 +194,7 @@
     const aspectY = (cut === 'marquise' || cut === 'pear' || cut === 'oval') ? 1.4 : 1;
     const R = diameter / 2;
     const totalDepth = diameter * (depthPct / 100);
-    const girdleH = Math.max(0.5, diameter * (girdlePct / 100));
+    const girdleH = diameter * (girdlePct / 100);
     const crownH = (totalDepth - girdleH) * (crownHPct / 100);
     const pavH = Math.max(1, diameter * (pavDepthPct / 100));
     const tableR = R * (tablePct / 100);
@@ -216,7 +216,7 @@
     const tris = [
       ...buildCap(tableRing, yTable, true),
       ...buildBelt(tableRing, yTable, girdleRing, yGT),
-      ...buildBelt(girdleRing, yGT, girdleRing, yGB),
+      ...(girdleH > 0 ? buildBelt(girdleRing, yGT, girdleRing, yGB) : []),
     ];
 
     if (mirrorCrown) {
@@ -276,7 +276,7 @@
     document.getElementById('v-pavFacets').textContent = p.pavFacets;
     document.getElementById('v-girdle').textContent   = p.girdlePct + '%';
 
-    const girdleH    = Math.max(0.5, p.diameter * (p.girdlePct / 100));
+    const girdleH    = p.diameter * (p.girdlePct / 100);
     const crownHmm   = (p.diameter * p.depthPct / 100 - girdleH) * (p.crownHPct / 100);
     const totalDepth = (p.diameter * p.depthPct / 100).toFixed(1);
     const crownH     = crownHmm.toFixed(1);
