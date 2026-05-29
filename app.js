@@ -217,21 +217,26 @@
       ...buildCap(tableRing, yTable, true),
       ...buildBelt(tableRing, yTable, girdleRing, yGT),
       ...buildBelt(girdleRing, yGT, girdleRing, yGB),
-      ...buildBelt(girdleRing, yGB, pavMidRing, yPavMid),
     ];
 
     if (mirrorCrown) {
-      // Mirror the crown below the girdle: second table at yGB - crownH, facing down
+      // Mirror the crown below the girdle: girdle → second table, cap facing down
       const yTable2 = yGB - crownH;
       const tableRing2 = ringPoints(n, tableR, tableR * aspectY, shapeFn);
       tris.push(...buildBelt(girdleRing, yGB, tableRing2, yTable2));
       tris.push(...buildCap(tableRing2, yTable2, false));
-    } else if (culetR > 0) {
-      const culetRing = ringPoints(pn, culetR, culetR * aspectY, shapeFn);
-      tris.push(...buildBelt(pavMidRing, yPavMid, culetRing, yPavTip));
-      tris.push(...buildCap(culetRing, yPavTip, false));
     } else {
-      tris.push(...buildCone([cut === 'pear' ? R * 0.05 : 0, 0], yPavTip, pavMidRing, yPavMid));
+      tris.push(...buildBelt(girdleRing, yGB, pavMidRing, yPavMid));
+    }
+
+    if (!mirrorCrown) {
+      if (culetR > 0) {
+        const culetRing = ringPoints(pn, culetR, culetR * aspectY, shapeFn);
+        tris.push(...buildBelt(pavMidRing, yPavMid, culetRing, yPavTip));
+        tris.push(...buildCap(culetRing, yPavTip, false));
+      } else {
+        tris.push(...buildCone([cut === 'pear' ? R * 0.05 : 0, 0], yPavTip, pavMidRing, yPavMid));
+      }
     }
 
     const flat = tris.flat();
