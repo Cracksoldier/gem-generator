@@ -1,112 +1,472 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Gem Generator</title>
+<title>Gem Generator — 3D Printable Gemstones</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
-<link rel="stylesheet" href="style.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:      #0d1117;
+    --surface: #161b22;
+    --card:    #1c2333;
+    --border:  #30363d;
+    --accent:  #e94560;
+    --accent2: #533483;
+    --gem:     #4fc3f7;
+    --text:    #e6edf3;
+    --muted:   #8b949e;
+    --radius:  14px;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ── Nav ─────────────────────────────────────────── */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(13, 17, 23, 0.88);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .nav-logo {
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+    color: var(--text);
+    text-decoration: none;
+  }
+  .nav-logo span { color: var(--accent); }
+
+  .nav-cta {
+    background: var(--accent);
+    color: #fff;
+    text-decoration: none;
+    padding: 8px 20px;
+    border-radius: 8px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    transition: opacity 0.15s, transform 0.1s;
+  }
+  .nav-cta:hover { opacity: 0.88; }
+  .nav-cta:active { transform: scale(0.97); }
+
+  /* ── Hero ────────────────────────────────────────── */
+  .hero {
+    text-align: center;
+    padding: 100px 24px 80px;
+    max-width: 760px;
+    margin: 0 auto;
+  }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: rgba(233, 69, 96, 0.12);
+    border: 1px solid rgba(233, 69, 96, 0.3);
+    color: var(--accent);
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    padding: 5px 14px;
+    border-radius: 20px;
+    margin-bottom: 28px;
+  }
+
+  .hero h1 {
+    font-size: clamp(2.4rem, 6vw, 4rem);
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -1.5px;
+    margin-bottom: 22px;
+  }
+  .hero h1 em {
+    font-style: normal;
+    color: var(--gem);
+  }
+
+  .hero-sub {
+    font-size: 1.15rem;
+    color: var(--muted);
+    max-width: 540px;
+    margin: 0 auto 44px;
+    line-height: 1.7;
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: 14px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--accent);
+    color: #fff;
+    text-decoration: none;
+    padding: 14px 32px;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+    transition: opacity 0.15s, transform 0.1s;
+    box-shadow: 0 0 32px rgba(233, 69, 96, 0.3);
+  }
+  .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+  .btn-primary:active { transform: scale(0.98); }
+
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: transparent;
+    color: var(--text);
+    text-decoration: none;
+    padding: 14px 28px;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 600;
+    border: 1px solid var(--border);
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .btn-secondary:hover { border-color: var(--gem); background: rgba(79, 195, 247, 0.06); }
+
+  /* ── Demo preview strip ──────────────────────────── */
+  .cuts-strip {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding: 0 24px 80px;
+    max-width: 680px;
+    margin: 0 auto;
+  }
+
+  .cut-pill {
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 0.78rem;
+    font-weight: 500;
+    padding: 5px 14px;
+    border-radius: 20px;
+    letter-spacing: 0.2px;
+  }
+
+  /* ── Features ────────────────────────────────────── */
+  .features {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 0 24px 100px;
+  }
+
+  .section-title {
+    text-align: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 14px;
+  }
+
+  .features-headline {
+    text-align: center;
+    font-size: clamp(1.6rem, 3.5vw, 2.4rem);
+    font-weight: 700;
+    letter-spacing: -0.8px;
+    margin-bottom: 56px;
+    color: var(--text);
+  }
+
+  .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+  }
+
+  .feature-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px 28px 24px;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .feature-card:hover {
+    border-color: rgba(79, 195, 247, 0.4);
+    transform: translateY(-2px);
+  }
+
+  .feature-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    margin-bottom: 18px;
+    background: rgba(79, 195, 247, 0.1);
+    border: 1px solid rgba(79, 195, 247, 0.2);
+  }
+
+  .feature-card h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 9px;
+    color: var(--text);
+  }
+
+  .feature-card p {
+    font-size: 0.88rem;
+    color: var(--muted);
+    line-height: 1.65;
+  }
+
+  .feature-card p strong {
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  /* ── Parameters showcase ─────────────────────────── */
+  .params {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 0 24px 100px;
+  }
+
+  .params-headline {
+    text-align: center;
+    font-size: clamp(1.4rem, 3vw, 2rem);
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    margin-bottom: 10px;
+  }
+
+  .params-sub {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.95rem;
+    margin-bottom: 44px;
+  }
+
+  .param-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px;
+  }
+
+  .param-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.85rem;
+  }
+
+  .param-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--accent);
+    flex-shrink: 0;
+  }
+
+  .param-item span { color: var(--muted); }
+
+  /* ── CTA section ─────────────────────────────────── */
+  .cta {
+    background: linear-gradient(135deg, rgba(83, 52, 131, 0.3) 0%, rgba(233, 69, 96, 0.15) 100%);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    text-align: center;
+    padding: 80px 24px;
+  }
+
+  .cta h2 {
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    font-weight: 800;
+    letter-spacing: -1px;
+    margin-bottom: 16px;
+  }
+
+  .cta p {
+    color: var(--muted);
+    font-size: 1rem;
+    margin-bottom: 36px;
+    max-width: 460px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* ── Footer ──────────────────────────────────────── */
+  footer {
+    text-align: center;
+    padding: 32px 24px;
+    color: var(--muted);
+    font-size: 0.82rem;
+    border-top: 1px solid var(--border);
+  }
+
+  footer a { color: var(--gem); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+
+  @media (max-width: 600px) {
+    nav { padding: 12px 20px; }
+    .hero { padding: 70px 20px 60px; }
+    .feature-grid { grid-template-columns: 1fr; }
+    .param-list { grid-template-columns: 1fr 1fr; }
+  }
+</style>
 </head>
 <body>
 
-<header>
-  <h1>&#9672; Gem <span>Generator</span></h1>
-  <div class="header-actions">
-    <button class="btn-icon" id="btn-wireframe">Wireframe: OFF</button>
-    <button class="btn-icon" id="btn-theme">Light Mode</button>
+<nav>
+  <a class="nav-logo" href="#">&#9672; Gem <span>Generator</span></a>
+  <a class="nav-cta" href="app.html">Launch App &rarr;</a>
+</nav>
+
+<!-- ── Hero ──────────────────────────────────────────── -->
+<section class="hero">
+  <div class="hero-badge">&#9672; 3D Printable Gemstone Generator</div>
+  <h1>Design <em>custom gems</em>,<br>print them in 3D</h1>
+  <p class="hero-sub">
+    A parametric gem generator that runs entirely in your browser.
+    Configure every facet, export a print-ready STL — no server, no account, no install.
+  </p>
+  <div class="hero-actions">
+    <a class="btn-primary" href="app.html">Open Generator &rarr;</a>
+    <a class="btn-secondary" href="#features">See Features</a>
   </div>
-</header>
+</section>
 
-<div class="main">
-  <div class="controls" id="controls">
-
-    <div class="section-label">Cut Style</div>
-    <div class="control-row">
-      <label><strong>Cut</strong></label>
-      <select id="cut">
-        <option value="brilliant">Brilliant (Round)</option>
-        <option value="emerald">Emerald (Rectangle)</option>
-        <option value="marquise">Marquise (Pointed Oval)</option>
-        <option value="oval">Oval</option>
-        <option value="pear">Pear (Teardrop)</option>
-        <option value="cushion">Cushion (Rounded Square)</option>
-        <option value="princess">Princess (Square)</option>
-      </select>
-    </div>
-
-    <div class="section-label">Dimensions</div>
-    <div class="control-row">
-      <label><strong>Diameter / Width</strong><span class="val" id="v-diameter">20 mm</span></label>
-      <input type="range" id="diameter" min="5" max="60" step="1" value="20">
-    </div>
-    <div class="control-row">
-      <label><strong>Total Depth %</strong><span class="val" id="v-depth">60%</span></label>
-      <input type="range" id="depth" min="20" max="90" step="1" value="60">
-    </div>
-
-    <div class="section-label">Crown</div>
-    <div class="control-row">
-      <label><strong>Table Size %</strong><span class="val" id="v-table">55%</span></label>
-      <input type="range" id="table" min="20" max="80" step="1" value="55">
-    </div>
-    <div class="control-row">
-      <label><strong>Crown Height %</strong><span class="val" id="v-crownH">35%</span></label>
-      <input type="range" id="crownH" min="5" max="60" step="1" value="35">
-    </div>
-    <div class="control-row">
-      <label><strong>Crown Facets</strong><span class="val" id="v-crownFacets">8</span></label>
-      <input type="range" id="crownFacets" min="4" max="16" step="1" value="8">
-    </div>
-
-    <div class="section-label">Pavilion</div>
-    <div class="control-row">
-      <label><strong>Pavilion Depth %</strong><span class="val" id="v-pavDepth">43%</span></label>
-      <input type="range" id="pavDepth" min="20" max="70" step="1" value="43">
-    </div>
-    <div class="control-row">
-      <label><strong>Pavilion Facets</strong><span class="val" id="v-pavFacets">8</span></label>
-      <input type="range" id="pavFacets" min="4" max="16" step="1" value="8">
-    </div>
-    <div class="control-row">
-      <label><strong>Mirror Crown</strong><input type="checkbox" id="mirrorCrown" style="width:auto;cursor:pointer;accent-color:var(--accent);"></label>
-    </div>
-    <div class="control-row">
-      <label><strong>Crown Only</strong><input type="checkbox" id="crownOnly" style="width:auto;cursor:pointer;accent-color:var(--accent);"></label>
-    </div>
-
-    <div class="section-label">Girdle &amp; Culet</div>
-    <div class="control-row">
-      <label><strong>Girdle Thickness</strong><span class="val" id="v-girdle">3%</span></label>
-      <input type="range" id="girdle" min="0" max="15" step="1" value="3">
-    </div>
-    <div class="control-row">
-      <label><strong>Culet</strong></label>
-      <select id="culet">
-        <option value="none">None (Sharp Point)</option>
-        <option value="small">Small</option>
-        <option value="medium">Medium</option>
-        <option value="large">Large</option>
-      </select>
-    </div>
-
-    <button class="btn-download" id="btn-download">&#8659; Download STL</button>
-
-    <div class="dimensions" id="dimensions">
-      Loading&hellip;
-    </div>
-
-  </div>
-
-  <div class="preview">
-    <div id="canvas-container"></div>
-    <div class="preview-hint">Drag to rotate &nbsp;&#8226;&nbsp; Scroll to zoom</div>
-  </div>
+<div class="cuts-strip">
+  <span class="cut-pill">Brilliant</span>
+  <span class="cut-pill">Emerald</span>
+  <span class="cut-pill">Marquise</span>
+  <span class="cut-pill">Oval</span>
+  <span class="cut-pill">Pear</span>
+  <span class="cut-pill">Cushion</span>
+  <span class="cut-pill">Princess</span>
 </div>
 
-<!-- three.js UMD globals (r134 = last stable UMD release with ior support) -->
-<script src="https://cdn.jsdelivr.net/npm/three@0.134.0/build/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/controls/OrbitControls.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/exporters/STLExporter.js"></script>
-<script src="app.js"></script>
+<!-- ── Features ──────────────────────────────────────── -->
+<section class="features" id="features">
+  <p class="section-title">Features</p>
+  <h2 class="features-headline">Everything you need to design a gem</h2>
+
+  <div class="feature-grid">
+
+    <div class="feature-card">
+      <div class="feature-icon">&#9672;</div>
+      <h3>7 Classic Cut Styles</h3>
+      <p>Generate <strong>Brilliant, Emerald, Marquise, Oval, Pear, Cushion,</strong> and <strong>Princess</strong> cuts. Each is built from precise mathematical outlines — not approximations.</p>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-icon">&#8859;</div>
+      <h3>Full Parametric Control</h3>
+      <p>Adjust <strong>diameter, total depth, table size, crown height, pavilion depth, facet counts, girdle thickness,</strong> and <strong>culet size</strong> — every proportion of the gem is yours to control.</p>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-icon">&#8645;</div>
+      <h3>Mirror Crown</h3>
+      <p>Flip the crown to the bottom and create a perfectly <strong>symmetrical bicone</strong> — ideal for pendants, beads, and decorative stones that look the same from both sides.</p>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-icon">&#9723;</div>
+      <h3>Crown Only (Cabochon)</h3>
+      <p>Generate just the crown with a <strong>flat base</strong> — perfect for inlay work, flat-backed pendants, and prints that need to sit flush against a surface.</p>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-icon">&#8659;</div>
+      <h3>Binary STL Export</h3>
+      <p>Download a compact <strong>binary STL</strong> ready for any slicer — PrusaSlicer, Cura, Bambu Studio, or online tools like viewstl.com. Dimensions are in real millimetres.</p>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-icon">&#9681;</div>
+      <h3>Live 3D Preview</h3>
+      <p>A three.js WebGL preview updates in <strong>real time</strong> as you drag sliders. Orbit, zoom, toggle wireframe, and switch between dark and light mode.</p>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-icon">&#9729;</div>
+      <h3>Works Offline</h3>
+      <p>All geometry is computed <strong>client-side in your browser</strong> — no server, no upload, no account needed. Open the file directly or host on GitHub Pages.</p>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-icon">&#8853;</div>
+      <h3>Sharp Girdle Edge</h3>
+      <p>Set girdle thickness to <strong>zero</strong> for a sharp-edged gem where the crown and pavilion meet at a single ring — great for faceted bead shapes.</p>
+    </div>
+
+  </div>
+</section>
+
+<!-- ── Parameters list ───────────────────────────────── -->
+<section class="params">
+  <p class="section-title">Parameters</p>
+  <h2 class="params-headline">Every proportion, under your control</h2>
+  <p class="params-sub">12 independent parameters. Tweak one slider and see the result instantly.</p>
+  <div class="param-list">
+    <div class="param-item"><span class="param-dot"></span>Diameter / Width</div>
+    <div class="param-item"><span class="param-dot"></span>Total Depth %</div>
+    <div class="param-item"><span class="param-dot"></span>Table Size %</div>
+    <div class="param-item"><span class="param-dot"></span>Crown Height %</div>
+    <div class="param-item"><span class="param-dot"></span>Crown Facets (4–16)</div>
+    <div class="param-item"><span class="param-dot"></span>Pavilion Depth %</div>
+    <div class="param-item"><span class="param-dot"></span>Pavilion Facets (4–16)</div>
+    <div class="param-item"><span class="param-dot"></span>Girdle Thickness (0–15%)</div>
+    <div class="param-item"><span class="param-dot"></span>Culet Size</div>
+    <div class="param-item"><span class="param-dot"></span>Mirror Crown</div>
+    <div class="param-item"><span class="param-dot"></span>Crown Only</div>
+    <div class="param-item"><span class="param-dot"></span>Cut Style</div>
+  </div>
+</section>
+
+<!-- ── CTA ───────────────────────────────────────────── -->
+<section class="cta">
+  <h2>Ready to design your gem?</h2>
+  <p>No install. No account. Just open and start designing.</p>
+  <a class="btn-primary" href="app.html">Open Generator &rarr;</a>
+</section>
+
+<footer>
+  <p>Gem Generator &mdash; client-side, open source, no dependencies.
+  &nbsp;|&nbsp; <a href="app.html">Launch App</a></p>
+</footer>
+
 </body>
 </html>

@@ -4,7 +4,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Running the app
 
-Open `index.html` directly in a browser — no build step, no server, no npm install required. It works via `file://` or any static host (GitHub Pages, etc.).
+| File | Purpose |
+|------|---------|
+| `index.html` | Landing page — features overview, links to `app.html` |
+| `app.html` | The gem generator application |
+
+Open either file directly in a browser — no build step, no server, no npm install required. Both work via `file://` or any static host (GitHub Pages, etc.).
 
 For automated testing use Playwright:
 ```powershell

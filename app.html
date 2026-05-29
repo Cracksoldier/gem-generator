@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gem Generator</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <h1>&#9672; Gem <span>Generator</span></h1>
+  <div class="header-actions">
+    <button class="btn-icon" id="btn-wireframe">Wireframe: OFF</button>
+    <button class="btn-icon" id="btn-theme">Light Mode</button>
+  </div>
+</header>
+
+<div class="main">
+  <div class="controls" id="controls">
+
+    <div class="section-label">Cut Style</div>
+    <div class="control-row">
+      <label><strong>Cut</strong></label>
+      <select id="cut">
+        <option value="brilliant">Brilliant (Round)</option>
+        <option value="emerald">Emerald (Rectangle)</option>
+        <option value="marquise">Marquise (Pointed Oval)</option>
+        <option value="oval">Oval</option>
+        <option value="pear">Pear (Teardrop)</option>
+        <option value="cushion">Cushion (Rounded Square)</option>
+        <option value="princess">Princess (Square)</option>
+      </select>
+    </div>
+
+    <div class="section-label">Dimensions</div>
+    <div class="control-row">
+      <label><strong>Diameter / Width</strong><span class="val" id="v-diameter">20 mm</span></label>
+      <input type="range" id="diameter" min="5" max="60" step="1" value="20">
+    </div>
+    <div class="control-row">
+      <label><strong>Total Depth %</strong><span class="val" id="v-depth">60%</span></label>
+      <input type="range" id="depth" min="20" max="90" step="1" value="60">
+    </div>
+
+    <div class="section-label">Crown</div>
+    <div class="control-row">
+      <label><strong>Table Size %</strong><span class="val" id="v-table">55%</span></label>
+      <input type="range" id="table" min="20" max="80" step="1" value="55">
+    </div>
+    <div class="control-row">
+      <label><strong>Crown Height %</strong><span class="val" id="v-crownH">35%</span></label>
+      <input type="range" id="crownH" min="5" max="60" step="1" value="35">
+    </div>
+    <div class="control-row">
+      <label><strong>Crown Facets</strong><span class="val" id="v-crownFacets">8</span></label>
+      <input type="range" id="crownFacets" min="4" max="16" step="1" value="8">
+    </div>
+
+    <div class="section-label">Pavilion</div>
+    <div class="control-row">
+      <label><strong>Pavilion Depth %</strong><span class="val" id="v-pavDepth">43%</span></label>
+      <input type="range" id="pavDepth" min="20" max="70" step="1" value="43">
+    </div>
+    <div class="control-row">
+      <label><strong>Pavilion Facets</strong><span class="val" id="v-pavFacets">8</span></label>
+      <input type="range" id="pavFacets" min="4" max="16" step="1" value="8">
+    </div>
+    <div class="control-row">
+      <label><strong>Mirror Crown</strong><input type="checkbox" id="mirrorCrown" style="width:auto;cursor:pointer;accent-color:var(--accent);"></label>
+    </div>
+    <div class="control-row">
+      <label><strong>Crown Only</strong><input type="checkbox" id="crownOnly" style="width:auto;cursor:pointer;accent-color:var(--accent);"></label>
+    </div>
+
+    <div class="section-label">Girdle &amp; Culet</div>
+    <div class="control-row">
+      <label><strong>Girdle Thickness</strong><span class="val" id="v-girdle">3%</span></label>
+      <input type="range" id="girdle" min="0" max="15" step="1" value="3">
+    </div>
+    <div class="control-row">
+      <label><strong>Culet</strong></label>
+      <select id="culet">
+        <option value="none">None (Sharp Point)</option>
+        <option value="small">Small</option>
+        <option value="medium">Medium</option>
+        <option value="large">Large</option>
+      </select>
+    </div>
+
+    <button class="btn-download" id="btn-download">&#8659; Download STL</button>
+
+    <div class="dimensions" id="dimensions">
+      Loading&hellip;
+    </div>
+
+  </div>
+
+  <div class="preview">
+    <div id="canvas-container"></div>
+    <div class="preview-hint">Drag to rotate &nbsp;&#8226;&nbsp; Scroll to zoom</div>
+  </div>
+</div>
+
+<!-- three.js UMD globals (r134 = last stable UMD release with ior support) -->
+<script src="https://cdn.jsdelivr.net/npm/three@0.134.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/exporters/STLExporter.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
