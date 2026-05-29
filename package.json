@@ -1,0 +1,16 @@
+{
+  "name": "gem-generator",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "webpack",
+    "dev": "webpack --watch"
+  },
+  "dependencies": {
+    "three": "^0.176.0"
+  },
+  "devDependencies": {
+    "webpack": "^5.107.0",
+    "webpack-cli": "^6.0.0"
+  }
+}

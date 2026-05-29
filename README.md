@@ -1,6 +1,6 @@
 # Gem Generator
 
-A browser-based 3D gemstone modeller that exports print-ready STL files. No install, no build step — open `index.html` and go.
+A browser-based 3D gemstone modeller that exports print-ready STL files. Open `index.html` in any browser — no server, no install required. The pre-built bundle is committed.
 
 ![Gem Generator](favicon.svg)
 
@@ -11,7 +11,7 @@ A browser-based 3D gemstone modeller that exports print-ready STL files. No inst
 - **Bottom geometry modes** — Normal pavilion, Mirror Crown (double-sided crown), Crown Only (cabochon/inlay flat back)
 - **Binary STL export** — ready for any slicer
 - **Wireframe overlay** and **dark/light theme** toggle
-- Works entirely via `file://` — no server, no npm, no framework
+- Works entirely via `file://` — no server, no account required. The pre-built `app.bundle.js` is committed.
 
 ## Usage
 
@@ -39,21 +39,43 @@ Or visit the [live demo on GitHub Pages](https://cracksoldier.github.io/gem-gene
 | Girdle Thickness | Height of the girdle band (0 = knife-edge) |
 | Culet Size % | Flat bottom facet size (0 = sharp point) |
 
+## Building (maintainers only)
+
+End users do not need to build — `app.bundle.js` is committed to the repo.
+
+To rebuild after upgrading three.js:
+
+```bash
+npm install
+npm run build
+```
+
+To watch for source changes during development:
+
+```bash
+npm run dev
+```
+
+Requires Node.js 18+.
+
 ## Files
 
 | File | Purpose |
 |------|---------|
 | `index.html` | Landing page |
 | `app.html` | The gem generator app |
-| `app.js` | Geometry pipeline, three.js scene, UI wiring, STL export |
+| `src/app.js` | ES module source: scene, geometry, UI, STL export |
+| `app.bundle.js` | Webpack production bundle (committed) |
+| `webpack.config.js` | Build configuration |
+| `package.json` | npm dependencies and scripts |
 | `style.css` | All styles with CSS custom-property theming |
 | `favicon.svg` | Gem icon |
 
 ## Tech
 
-- [three.js r134](https://threejs.org/) via jsDelivr CDN (UMD globals — no module bundler needed)
-- Vanilla JS IIFE, no frameworks, no dependencies
-- Works on `file://` (avoids ES module CORS restrictions in Chrome/Edge)
+- [three.js](https://threejs.org/) bundled via webpack (npm, tree-shaken, minified)
+- ES module source in `src/app.js`, bundled to a classic script for `file://` compatibility
+- No frameworks, no runtime dependencies beyond three.js
 
 ## License
 

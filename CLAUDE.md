@@ -9,16 +9,26 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 | `index.html` | Landing page — features overview, links to `app.html` |
 | `app.html` | The gem generator application |
 
-Open either file directly in a browser — no build step, no server, no npm install required. Both work via `file://` or any static host (GitHub Pages, etc.).
+Open either file directly in a browser — no server required. `app.bundle.js` is committed so users can open `app.html` without running a build.
 
 For automated testing use Playwright:
 ```powershell
-npm init -y
-npm install playwright
+npm install
 npx playwright install chromium
 node test-app.mjs   # write a test script as needed
 ```
-Clean up `package.json`, `package-lock.json`, and `node_modules/` before committing — they are not part of the project.
+
+### Build system (for maintainers)
+
+npm and webpack bundle three.js locally. To rebuild after upgrading three.js:
+
+```bash
+npm install
+npm run build      # produces app.bundle.js in the project root
+npm run dev        # webpack --watch for development
+```
+
+Commit `package.json`, `package-lock.json`, and `app.bundle.js`. Do not commit `node_modules/`.
 
 ## Architecture
 
@@ -26,16 +36,18 @@ The app is split across four files:
 
 | File | Contents |
 |------|----------|
-| `index.html` | HTML structure only — layout, controls markup, three.js `<script>` tags, `<link>` to CSS/JS |
+| `app.html` | HTML structure only — layout, controls markup, `<link>` to CSS, `<script>` to bundle |
 | `style.css` | All styles — CSS custom-property theming (`[data-theme="dark"\|"light"]`), responsive grid |
-| `app.js` | Plain IIFE script — three.js scene, geometry builders, UI wiring, STL export |
+| `src/app.js` | ES module source — three.js scene, geometry builders, UI wiring, STL export |
+| `app.bundle.js` | Webpack production bundle (committed — users don't need npm) |
+| `webpack.config.js` | Build config: entry `src/app.js`, output `app.bundle.js` in project root |
 | `favicon.svg` | Inline SVG gem icon (flat-top diamond, accent red) |
 
-three.js is loaded as UMD globals from jsDelivr CDN (r134) via plain `<script>` tags — no importmap, no ES modules. This keeps the app compatible with Chrome/Edge on `file://` (which blocks external ES module scripts due to CORS). `app.js` is a classic IIFE script; three.js globals are `THREE`, `THREE.OrbitControls`, `THREE.STLExporter`.
+three.js is installed via npm and bundled by webpack into `app.bundle.js` — a single self-executing script compatible with `file://`. `src/app.js` is an ES module; webpack handles scoping so no IIFE is needed.
 
-### JavaScript structure (`app.js`)
+### JavaScript structure (`src/app.js`)
 
-`app.js` is an IIFE (`(function(){ 'use strict'; … })()`). It relies on three UMD globals injected by `index.html` before it loads: `THREE`, `THREE.OrbitControls`, `THREE.STLExporter` (all from jsDelivr CDN, three.js r134).
+`src/app.js` is an ES module. It imports `* as THREE from 'three'`, `{ OrbitControls } from 'three/addons/controls/OrbitControls.js'`, and `{ STLExporter } from 'three/addons/exporters/STLExporter.js'`. Webpack bundles these into `app.bundle.js` as a classic script.
 
 **Geometry pipeline** — pure math, no three.js geometry helpers:
 - `ringPoints(n, rx, ry, shapeFn)` — samples `n` 2D `[x, y]` points around a named outline
