@@ -146,7 +146,8 @@
         const a1 = [ringA[(2*i+2)%nA][0], yA, ringA[(2*i+2)%nA][1]];
         const b0 = [ringB[i][0], yB, ringB[i][1]];
         const b1 = [ringB[j][0], yB, ringB[j][1]];
-        tris.push(a0, b0, am, am, b0, b1, am, b1, a1);
+        // Reversed winding vs nB===2*nA to keep outward-facing normals when ring roles are swapped
+        tris.push(a0, am, b0, am, b1, b0, am, a1, b1);
       }
     } else {
       // Zipper: advance through both rings by normalised angle, one triangle per step.
@@ -211,7 +212,6 @@
     const n = crownFacets, pn = pavFacets;
     const tableRing  = ringPoints(n,     tableR,   tableR * aspectY,   shapeFn);
     const girdleRing = ringPoints(n * 2, R,        R * aspectY,        shapeFn);
-    const pavMidRing = ringPoints(pn,    R * 0.35, R * 0.35 * aspectY, shapeFn);
 
     const tris = [
       ...buildCap(tableRing, yTable, true),
@@ -225,10 +225,10 @@
     } else if (mirrorCrown) {
       // Mirror the crown below the girdle: girdle → second table, cap facing down
       const yTable2 = yGB - crownH;
-      const tableRing2 = ringPoints(n, tableR, tableR * aspectY, shapeFn);
-      tris.push(...buildBelt(girdleRing, yGB, tableRing2, yTable2));
-      tris.push(...buildCap(tableRing2, yTable2, false));
+      tris.push(...buildBelt(girdleRing, yGB, tableRing, yTable2));
+      tris.push(...buildCap(tableRing, yTable2, false));
     } else {
+      const pavMidRing = ringPoints(pn, R * 0.35, R * 0.35 * aspectY, shapeFn);
       tris.push(...buildBelt(girdleRing, yGB, pavMidRing, yPavMid));
       if (culetR > 0) {
         const culetRing = ringPoints(pn, culetR, culetR * aspectY, shapeFn);
@@ -279,7 +279,9 @@
 
     const girdleH    = p.diameter * (p.girdlePct / 100);
     const crownHmm   = (p.diameter * p.depthPct / 100 - girdleH) * (p.crownHPct / 100);
-    const totalDepth = (p.diameter * p.depthPct / 100).toFixed(1);
+    const totalDepth = p.crownOnly
+      ? (crownHmm + girdleH).toFixed(1)
+      : (p.diameter * p.depthPct / 100).toFixed(1);
     const crownH     = crownHmm.toFixed(1);
     const pavH       = p.mirrorCrown ? crownHmm.toFixed(1) : Math.max(1, p.diameter * (p.pavDepthPct / 100)).toFixed(1);
     const pavLabel   = p.crownOnly ? '— (crown only)' : p.mirrorCrown ? `${pavH} mm (mirrored)` : `${pavH} mm`;
@@ -368,15 +370,21 @@
     });
   });
 
+  // Cache stable .control-row references once — these DOM nodes never move.
+  const _mirrorUIRows = {
+    culet:     document.getElementById('culet').closest('.control-row'),
+    pavDepth:  document.getElementById('pavDepth').closest('.control-row'),
+    pavFacets: document.getElementById('pavFacets').closest('.control-row'),
+    mirror:    document.getElementById('mirrorCrown').closest('.control-row'),
+    crownOnly: document.getElementById('crownOnly').closest('.control-row'),
+  };
+
   function updateMirrorUI() {
-    const mirrored   = document.getElementById('mirrorCrown').checked;
-    const crownOnly  = document.getElementById('crownOnly').checked;
-    const dimBottom  = mirrored || crownOnly;
-    const culetRow      = document.getElementById('culet').closest('.control-row');
-    const pavDepthRow   = document.getElementById('pavDepth').closest('.control-row');
-    const pavFacetsRow  = document.getElementById('pavFacets').closest('.control-row');
-    const mirrorRow     = document.getElementById('mirrorCrown').closest('.control-row');
-    const crownOnlyRow  = document.getElementById('crownOnly').closest('.control-row');
+    const mirrored  = document.getElementById('mirrorCrown').checked;
+    const crownOnly = document.getElementById('crownOnly').checked;
+    const dimBottom = mirrored || crownOnly;
+    const { culet: culetRow, pavDepth: pavDepthRow, pavFacets: pavFacetsRow,
+            mirror: mirrorRow, crownOnly: crownOnlyRow } = _mirrorUIRows;
     culetRow.style.opacity       = dimBottom ? '0.35' : '';
     culetRow.style.pointerEvents = dimBottom ? 'none' : '';
     pavDepthRow.style.opacity       = dimBottom ? '0.35' : '';
@@ -392,6 +400,7 @@
   document.getElementById('mirrorCrown').addEventListener('change', () => {
     if (document.getElementById('mirrorCrown').checked)
       document.getElementById('crownOnly').checked = false;
+    clearTimeout(debounceTimer);
     updateMirrorUI();
     rebuildGem();
   });
@@ -399,6 +408,7 @@
   document.getElementById('crownOnly').addEventListener('change', () => {
     if (document.getElementById('crownOnly').checked)
       document.getElementById('mirrorCrown').checked = false;
+    clearTimeout(debounceTimer);
     updateMirrorUI();
     rebuildGem();
   });
@@ -429,5 +439,6 @@
     URL.revokeObjectURL(url);
   });
 
+  updateMirrorUI();
   rebuildGem();
 })();
