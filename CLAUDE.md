@@ -51,9 +51,17 @@ yPavTip     — culet tip or flat
 
 When `girdleH === 0` (girdle slider at 0%), the girdle belt is skipped and crown and pavilion share a single ring at Y=0, producing a sharp edge.
 
-**Mirror Crown mode**: when `mirrorCrown` is true, the pavilion geometry is replaced by a second crown mirrored below the girdle — same table radius, crown height, facet count, and cut outline as the top. The pavilion belt, pavMid ring, and culet are all skipped; instead `buildBelt(girdleRing, yGB, tableRing2, yTable2)` + `buildCap` close the bottom.
+**Bottom geometry modes** — three mutually exclusive options controlled by `mirrorCrown` and `crownOnly` in params:
 
-**UI → geometry flow**: every `<input>`/`<select>`/`<checkbox>` fires `debouncedRebuild()` (80 ms debounce) → `rebuildGem()` → `buildGemGeometry(params)` → disposes old mesh, adds new `THREE.Mesh` to scene. Camera is positioned only on the first build (`firstBuild` flag). The `mirrorCrown` checkbox also calls `updateMirrorUI()` to dim the Pavilion Depth, Pavilion Facets, and Culet controls.
+| Mode | Geometry below girdle |
+|------|-----------------------|
+| Normal (default) | Pavilion belt → pavMid ring → culet tip/flat |
+| Mirror Crown | Second crown belt → second table cap (facing down) |
+| Crown Only | Single flat cap at `yGB` (facing down) — cabochon/inlay style |
+
+Mirror Crown and Crown Only are mutually exclusive; checking one unchecks the other. Both dim the Pavilion Depth, Pavilion Facets, and Culet controls via `updateMirrorUI()`. Crown Only additionally dims the Mirror Crown row; Mirror Crown dims the Crown Only row.
+
+**UI → geometry flow**: every `<input>`/`<select>`/`<checkbox>` fires `debouncedRebuild()` (80 ms debounce) → `rebuildGem()` → `buildGemGeometry(params)` → disposes old mesh, adds new `THREE.Mesh` to scene. Camera is positioned only on the first build (`firstBuild` flag). Mode checkboxes also call `updateMirrorUI()` to update control opacity/pointer-events.
 
 **STL export**: `STLExporter.parse(mesh, { binary: true })` → `Blob` → programmatic `<a>` click download.
 
