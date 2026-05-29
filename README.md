@@ -11,7 +11,7 @@ A browser-based 3D gemstone modeller that exports print-ready STL files. Open `i
 - **Bottom geometry modes** — Normal pavilion, Mirror Crown (double-sided crown), Crown Only (cabochon/inlay flat back)
 - **Binary STL export** — ready for any slicer
 - **Wireframe overlay** and **dark/light theme** toggle
-- Works entirely via `file://` — no server, no account required. The pre-built `app.bundle.js` is committed.
+- Works via `file://` or any static host — no server, no account required
 
 ## Usage
 

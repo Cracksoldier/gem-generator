@@ -11,9 +11,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Open either file directly in a browser — no server required. `app.bundle.js` is committed so users can open `app.html` without running a build.
 
-For automated testing use Playwright:
-```powershell
-npm install
+For automated testing use Playwright (not in project dependencies — install separately):
+```bash
+npm install --save-dev playwright
 npx playwright install chromium
 node test-app.mjs   # write a test script as needed
 ```
@@ -32,7 +32,7 @@ Commit `package.json`, `package-lock.json`, and `app.bundle.js`. Do not commit `
 
 ## Architecture
 
-The app is split across four files:
+The app is split across these files:
 
 | File | Contents |
 |------|----------|
@@ -51,7 +51,7 @@ three.js is installed via npm and bundled by webpack into `app.bundle.js` — a 
 
 **Geometry pipeline** — pure math, no three.js geometry helpers:
 - `ringPoints(n, rx, ry, shapeFn)` — samples `n` 2D `[x, y]` points around a named outline
-- Shape functions (`circleShape`, `ellipseShape`, `marquiseShape`, `pearShape`, `squareShape`, `cushionShape`, `emeraldShape`) — each takes `(t, rx, ry)` and returns `[x, y]` for parameter `t ∈ [0,1)`
+- Shape functions (`circleShape`, `marquiseShape`, `pearShape`, `squareShape`, `cushionShape`, `emeraldShape`) — each takes `(t, rx, ry)` and returns `[x, y]` for parameter `t ∈ [0,1)`; the oval cut reuses `circleShape` with an aspect ratio rather than a separate function
 - `buildCap` — triangulates a flat polygon ring into a fan (table top / culet flat)
 - `buildBelt(ringA, yA, ringB, yB)` — zips two rings into a triangle strip; exact branches for same-count and 2× ratio; generic fallback uses a zipper (advance whichever ring is behind in normalised angle) so every vertex on both rings appears in at least one triangle
 - `buildCone(tip, tipY, ring, ringY)` — collapses a ring to a single tip point (sharp culet)
@@ -86,7 +86,7 @@ Mirror Crown and Crown Only are mutually exclusive; checking one unchecks the ot
 
 - All geometry coordinates are in **millimetres** matching the UI parameters.
 - Triangles are wound for outward-facing normals; `computeVertexNormals()` smooths lighting but the winding still matters for STL correctness.
-- `MeshPhongMaterial` (not `MeshPhysicalMaterial`) is used — r134's physical material requires an env map for transmission to be visible. Phong with high shininess gives a gem-like specular appearance without that dependency.
+- `MeshPhongMaterial` (not `MeshPhysicalMaterial`) is used — the physical material requires an env map for transmission to be visible. Phong with high shininess gives a gem-like specular appearance without that dependency.
 - `THREE.DoubleSide` is used so inside faces are visible during orbit but the exported STL relies on correct winding for slicers.
 - Adding a new cut style requires: a new shape function, an entry in `getShapeFn()`, and an `<option>` in the `#cut` select. Elongated shapes (aspect ratio ≠ 1) set `aspectY` in `buildGemGeometry`.
 - `gemMesh` and `wireframeMesh` share the same `BufferGeometry` object. On rebuild, only `gemMesh.geometry.dispose()` is called; `wireframeMesh.material.dispose()` is called but geometry disposal is skipped to avoid a double-free.
