@@ -189,7 +189,7 @@
   }
 
   function buildGemGeometry(p) {
-    const { cut, diameter, depthPct, tablePct, crownHPct, pavDepthPct, crownFacets, pavFacets, girdlePct, culet, mirrorCrown } = p;
+    const { cut, diameter, depthPct, tablePct, crownHPct, pavDepthPct, crownFacets, pavFacets, girdlePct, culet, mirrorCrown, crownOnly } = p;
     const shapeFn = getShapeFn(cut);
     const aspectY = (cut === 'marquise' || cut === 'pear' || cut === 'oval') ? 1.4 : 1;
     const R = diameter / 2;
@@ -219,7 +219,10 @@
       ...(girdleH > 0 ? buildBelt(girdleRing, yGT, girdleRing, yGB) : []),
     ];
 
-    if (mirrorCrown) {
+    if (crownOnly) {
+      // Flat base at the girdle level — closes the mesh as a cabochon/inlay piece
+      tris.push(...buildCap(girdleRing, yGB, false));
+    } else if (mirrorCrown) {
       // Mirror the crown below the girdle: girdle → second table, cap facing down
       const yTable2 = yGB - crownH;
       const tableRing2 = ringPoints(n, tableR, tableR * aspectY, shapeFn);
@@ -227,9 +230,6 @@
       tris.push(...buildCap(tableRing2, yTable2, false));
     } else {
       tris.push(...buildBelt(girdleRing, yGB, pavMidRing, yPavMid));
-    }
-
-    if (!mirrorCrown) {
       if (culetR > 0) {
         const culetRing = ringPoints(pn, culetR, culetR * aspectY, shapeFn);
         tris.push(...buildBelt(pavMidRing, yPavMid, culetRing, yPavTip));
@@ -263,6 +263,7 @@
       girdlePct:   +document.getElementById('girdle').value,
       culet:       document.getElementById('culet').value,
       mirrorCrown: document.getElementById('mirrorCrown').checked,
+      crownOnly:   document.getElementById('crownOnly').checked,
     };
   }
 
@@ -281,7 +282,7 @@
     const totalDepth = (p.diameter * p.depthPct / 100).toFixed(1);
     const crownH     = crownHmm.toFixed(1);
     const pavH       = p.mirrorCrown ? crownHmm.toFixed(1) : Math.max(1, p.diameter * (p.pavDepthPct / 100)).toFixed(1);
-    const pavLabel   = p.mirrorCrown ? `${pavH} mm (mirrored)` : `${pavH} mm`;
+    const pavLabel   = p.crownOnly ? '— (crown only)' : p.mirrorCrown ? `${pavH} mm (mirrored)` : `${pavH} mm`;
     const tableD     = (p.diameter * p.tablePct / 100).toFixed(1);
     document.getElementById('dimensions').innerHTML =
       `Diameter: <span>${p.diameter} mm</span><br>` +
@@ -368,19 +369,36 @@
   });
 
   function updateMirrorUI() {
-    const mirrored = document.getElementById('mirrorCrown').checked;
-    const culetRow = document.getElementById('culet').closest('.control-row');
-    const pavDepthRow = document.getElementById('pavDepth').closest('.control-row');
-    const pavFacetsRow = document.getElementById('pavFacets').closest('.control-row');
-    culetRow.style.opacity    = mirrored ? '0.35' : '';
-    culetRow.style.pointerEvents = mirrored ? 'none' : '';
-    pavDepthRow.style.opacity    = mirrored ? '0.35' : '';
-    pavDepthRow.style.pointerEvents = mirrored ? 'none' : '';
-    pavFacetsRow.style.opacity   = mirrored ? '0.35' : '';
-    pavFacetsRow.style.pointerEvents = mirrored ? 'none' : '';
+    const mirrored   = document.getElementById('mirrorCrown').checked;
+    const crownOnly  = document.getElementById('crownOnly').checked;
+    const dimBottom  = mirrored || crownOnly;
+    const culetRow      = document.getElementById('culet').closest('.control-row');
+    const pavDepthRow   = document.getElementById('pavDepth').closest('.control-row');
+    const pavFacetsRow  = document.getElementById('pavFacets').closest('.control-row');
+    const mirrorRow     = document.getElementById('mirrorCrown').closest('.control-row');
+    const crownOnlyRow  = document.getElementById('crownOnly').closest('.control-row');
+    culetRow.style.opacity       = dimBottom ? '0.35' : '';
+    culetRow.style.pointerEvents = dimBottom ? 'none' : '';
+    pavDepthRow.style.opacity       = dimBottom ? '0.35' : '';
+    pavDepthRow.style.pointerEvents = dimBottom ? 'none' : '';
+    pavFacetsRow.style.opacity      = dimBottom ? '0.35' : '';
+    pavFacetsRow.style.pointerEvents = dimBottom ? 'none' : '';
+    mirrorRow.style.opacity       = crownOnly ? '0.35' : '';
+    mirrorRow.style.pointerEvents = crownOnly ? 'none' : '';
+    crownOnlyRow.style.opacity       = mirrored ? '0.35' : '';
+    crownOnlyRow.style.pointerEvents = mirrored ? 'none' : '';
   }
 
   document.getElementById('mirrorCrown').addEventListener('change', () => {
+    if (document.getElementById('mirrorCrown').checked)
+      document.getElementById('crownOnly').checked = false;
+    updateMirrorUI();
+    rebuildGem();
+  });
+
+  document.getElementById('crownOnly').addEventListener('change', () => {
+    if (document.getElementById('crownOnly').checked)
+      document.getElementById('mirrorCrown').checked = false;
     updateMirrorUI();
     rebuildGem();
   });
