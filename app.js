@@ -149,15 +149,27 @@
         tris.push(a0, b0, am, am, b0, b1, am, b1, a1);
       }
     } else {
-      const n = Math.min(nA, nB);
-      for (let i = 0; i < n; i++) {
-        const j = (i + 1) % n;
-        const ai = Math.round(i * nA / n) % nA, aj = Math.round(j * nA / n) % nA;
-        const bi = Math.round(i * nB / n) % nB, bj = Math.round(j * nB / n) % nB;
-        tris.push(
-          [ringA[ai][0], yA, ringA[ai][1]], [ringB[bi][0], yB, ringB[bi][1]], [ringA[aj][0], yA, ringA[aj][1]],
-          [ringB[bi][0], yB, ringB[bi][1]], [ringB[bj][0], yB, ringB[bj][1]], [ringA[aj][0], yA, ringA[aj][1]]
-        );
+      // Zipper: advance through both rings by normalised angle, one triangle per step.
+      // Emits exactly nA+nB triangles and references every vertex on both rings.
+      let ai = 0, bi = 0;
+      for (let step = 0; step < nA + nB; step++) {
+        const aFrac = ai < nA ? (ai + 1) / nA : Infinity;
+        const bFrac = bi < nB ? (bi + 1) / nB : Infinity;
+        if (aFrac <= bFrac) {
+          tris.push(
+            [ringA[ai % nA][0], yA, ringA[ai % nA][1]],
+            [ringB[bi % nB][0], yB, ringB[bi % nB][1]],
+            [ringA[(ai + 1) % nA][0], yA, ringA[(ai + 1) % nA][1]]
+          );
+          ai++;
+        } else {
+          tris.push(
+            [ringB[bi % nB][0], yB, ringB[bi % nB][1]],
+            [ringB[(bi + 1) % nB][0], yB, ringB[(bi + 1) % nB][1]],
+            [ringA[ai % nA][0], yA, ringA[ai % nA][1]]
+          );
+          bi++;
+        }
       }
     }
     return tris;
@@ -177,14 +189,14 @@
   }
 
   function buildGemGeometry(p) {
-    const { cut, diameter, depthPct, tablePct, crownHPct, crownFacets, pavFacets, girdlePct, culet } = p;
+    const { cut, diameter, depthPct, tablePct, crownHPct, pavDepthPct, crownFacets, pavFacets, girdlePct, culet } = p;
     const shapeFn = getShapeFn(cut);
     const aspectY = (cut === 'marquise' || cut === 'pear' || cut === 'oval') ? 1.4 : 1;
     const R = diameter / 2;
     const totalDepth = diameter * (depthPct / 100);
     const girdleH = Math.max(0.5, diameter * (girdlePct / 100));
     const crownH = (totalDepth - girdleH) * (crownHPct / 100);
-    const pavH = Math.max(1, totalDepth - crownH - girdleH);
+    const pavH = Math.max(1, diameter * (pavDepthPct / 100));
     const tableR = R * (tablePct / 100);
 
     const yTable = crownH, yGT = 0, yGB = -girdleH;
@@ -252,9 +264,10 @@
     document.getElementById('v-pavFacets').textContent = p.pavFacets;
     document.getElementById('v-girdle').textContent   = p.girdlePct + '%';
 
+    const girdleH    = Math.max(0.5, p.diameter * (p.girdlePct / 100));
     const totalDepth = (p.diameter * p.depthPct / 100).toFixed(1);
-    const crownH     = (p.diameter * p.depthPct / 100 * p.crownHPct / 100).toFixed(1);
-    const pavH       = (p.diameter * p.depthPct / 100 * (1 - p.crownHPct / 100)).toFixed(1);
+    const crownH     = ((p.diameter * p.depthPct / 100 - girdleH) * (p.crownHPct / 100)).toFixed(1);
+    const pavH       = Math.max(1, p.diameter * (p.pavDepthPct / 100)).toFixed(1);
     const tableD     = (p.diameter * p.tablePct / 100).toFixed(1);
     document.getElementById('dimensions').innerHTML =
       `Diameter: <span>${p.diameter} mm</span><br>` +
@@ -289,7 +302,7 @@
     const geo = buildGemGeometry(p);
 
     if (gemMesh) { scene.remove(gemMesh); gemMesh.geometry.dispose(); gemMesh.material.dispose(); }
-    if (wireframeMesh) { scene.remove(wireframeMesh); wireframeMesh.geometry.dispose(); wireframeMesh.material.dispose(); wireframeMesh = null; }
+    if (wireframeMesh) { scene.remove(wireframeMesh); wireframeMesh.material.dispose(); wireframeMesh = null; }
 
     gemMesh = new THREE.Mesh(geo, getGemMaterial(false));
     gemMesh.castShadow = true;

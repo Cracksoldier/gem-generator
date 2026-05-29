@@ -21,25 +21,22 @@ The app is split across four files:
 
 | File | Contents |
 |------|----------|
-| `index.html` | HTML structure only — layout, controls markup, importmap, `<link>` to CSS/JS |
+| `index.html` | HTML structure only — layout, controls markup, three.js `<script>` tags, `<link>` to CSS/JS |
 | `style.css` | All styles — CSS custom-property theming (`[data-theme="dark"\|"light"]`), responsive grid |
-| `app.js` | ES module — three.js scene, geometry builders, UI wiring, STL export |
+| `app.js` | Plain IIFE script — three.js scene, geometry builders, UI wiring, STL export |
 | `favicon.svg` | Inline SVG gem icon (flat-top diamond, accent red) |
 
 three.js is loaded as UMD globals from jsDelivr CDN (r134) via plain `<script>` tags — no importmap, no ES modules. This keeps the app compatible with Chrome/Edge on `file://` (which blocks external ES module scripts due to CORS). `app.js` is a classic IIFE script; three.js globals are `THREE`, `THREE.OrbitControls`, `THREE.STLExporter`.
 
 ### JavaScript structure (`app.js`)
 
-**CDN imports via importmap** (`https://esm.sh/three@0.160.0`):
-- `three` — scene, camera, lights, renderer, materials
-- `OrbitControls` — mouse/touch rotation and zoom
-- `STLExporter` — binary STL serialisation for download
+`app.js` is an IIFE (`(function(){ 'use strict'; … })()`). It relies on three UMD globals injected by `index.html` before it loads: `THREE`, `THREE.OrbitControls`, `THREE.STLExporter` (all from jsDelivr CDN, three.js r134).
 
 **Geometry pipeline** — pure math, no three.js geometry helpers:
 - `ringPoints(n, rx, ry, shapeFn)` — samples `n` 2D `[x, y]` points around a named outline
 - Shape functions (`circleShape`, `ellipseShape`, `marquiseShape`, `pearShape`, `squareShape`, `cushionShape`, `emeraldShape`) — each takes `(t, rx, ry)` and returns `[x, y]` for parameter `t ∈ [0,1)`
 - `buildCap` — triangulates a flat polygon ring into a fan (table top / culet flat)
-- `buildBelt(ringA, yA, ringB, yB)` — zips two rings into a quad-strip; handles same-count, 2× ratio, and generic cases
+- `buildBelt(ringA, yA, ringB, yB)` — zips two rings into a triangle strip; exact branches for same-count and 2× ratio; generic fallback uses a zipper (advance whichever ring is behind in normalised angle) so every vertex on both rings appears in at least one triangle
 - `buildCone(tip, tipY, ring, ringY)` — collapses a ring to a single tip point (sharp culet)
 - `buildGemGeometry(params)` — orchestrates the above into a `THREE.BufferGeometry` triangle soup, then calls `computeVertexNormals()`
 
