@@ -189,7 +189,7 @@
   }
 
   function buildGemGeometry(p) {
-    const { cut, diameter, depthPct, tablePct, crownHPct, pavDepthPct, crownFacets, pavFacets, girdlePct, culet } = p;
+    const { cut, diameter, depthPct, tablePct, crownHPct, pavDepthPct, crownFacets, pavFacets, girdlePct, culet, mirrorCrown } = p;
     const shapeFn = getShapeFn(cut);
     const aspectY = (cut === 'marquise' || cut === 'pear' || cut === 'oval') ? 1.4 : 1;
     const R = diameter / 2;
@@ -220,7 +220,13 @@
       ...buildBelt(girdleRing, yGB, pavMidRing, yPavMid),
     ];
 
-    if (culetR > 0) {
+    if (mirrorCrown) {
+      // Mirror the crown below the girdle: second table at yGB - crownH, facing down
+      const yTable2 = yGB - crownH;
+      const tableRing2 = ringPoints(n, tableR, tableR * aspectY, shapeFn);
+      tris.push(...buildBelt(girdleRing, yGB, tableRing2, yTable2));
+      tris.push(...buildCap(tableRing2, yTable2, false));
+    } else if (culetR > 0) {
       const culetRing = ringPoints(pn, culetR, culetR * aspectY, shapeFn);
       tris.push(...buildBelt(pavMidRing, yPavMid, culetRing, yPavTip));
       tris.push(...buildCap(culetRing, yPavTip, false));
@@ -251,6 +257,7 @@
       pavFacets:   +document.getElementById('pavFacets').value,
       girdlePct:   +document.getElementById('girdle').value,
       culet:       document.getElementById('culet').value,
+      mirrorCrown: document.getElementById('mirrorCrown').checked,
     };
   }
 
@@ -265,16 +272,18 @@
     document.getElementById('v-girdle').textContent   = p.girdlePct + '%';
 
     const girdleH    = Math.max(0.5, p.diameter * (p.girdlePct / 100));
+    const crownHmm   = (p.diameter * p.depthPct / 100 - girdleH) * (p.crownHPct / 100);
     const totalDepth = (p.diameter * p.depthPct / 100).toFixed(1);
-    const crownH     = ((p.diameter * p.depthPct / 100 - girdleH) * (p.crownHPct / 100)).toFixed(1);
-    const pavH       = Math.max(1, p.diameter * (p.pavDepthPct / 100)).toFixed(1);
+    const crownH     = crownHmm.toFixed(1);
+    const pavH       = p.mirrorCrown ? crownHmm.toFixed(1) : Math.max(1, p.diameter * (p.pavDepthPct / 100)).toFixed(1);
+    const pavLabel   = p.mirrorCrown ? `${pavH} mm (mirrored)` : `${pavH} mm`;
     const tableD     = (p.diameter * p.tablePct / 100).toFixed(1);
     document.getElementById('dimensions').innerHTML =
       `Diameter: <span>${p.diameter} mm</span><br>` +
       `Total depth: <span>${totalDepth} mm</span><br>` +
       `Table: <span>${tableD} mm (${p.tablePct}%)</span><br>` +
       `Crown height: <span>${crownH} mm</span><br>` +
-      `Pavilion depth: <span>${pavH} mm</span>`;
+      `Pavilion depth: <span>${pavLabel}</span>`;
   }
 
   function isDark() {
@@ -351,6 +360,24 @@
       clearTimeout(debounceTimer);
       debounceTimer = setTimeout(rebuildGem, 80);
     });
+  });
+
+  function updateMirrorUI() {
+    const mirrored = document.getElementById('mirrorCrown').checked;
+    const culetRow = document.getElementById('culet').closest('.control-row');
+    const pavDepthRow = document.getElementById('pavDepth').closest('.control-row');
+    const pavFacetsRow = document.getElementById('pavFacets').closest('.control-row');
+    culetRow.style.opacity    = mirrored ? '0.35' : '';
+    culetRow.style.pointerEvents = mirrored ? 'none' : '';
+    pavDepthRow.style.opacity    = mirrored ? '0.35' : '';
+    pavDepthRow.style.pointerEvents = mirrored ? 'none' : '';
+    pavFacetsRow.style.opacity   = mirrored ? '0.35' : '';
+    pavFacetsRow.style.pointerEvents = mirrored ? 'none' : '';
+  }
+
+  document.getElementById('mirrorCrown').addEventListener('change', () => {
+    updateMirrorUI();
+    rebuildGem();
   });
 
   document.getElementById('btn-wireframe').addEventListener('click', () => {
